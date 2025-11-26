@@ -1,20 +1,24 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    // Only redirect if we're not already on the login page and auth check is complete
+    if (!loading && !user && !redirecting && pathname !== '/login' && pathname !== '/register') {
+      setRedirecting(true);
+      router.replace('/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname, redirecting]);
 
-  if (loading) {
+  if (loading || redirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authAPI, User } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -20,18 +20,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       const data = await authAPI.getMe();
       setUser(data.user);
     } catch (error) {
+      // Set user to null on any error - user is not authenticated
       setUser(null);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    refreshUser().finally(() => setLoading(false));
-  }, []);
+    let mounted = true;
+    
+    // Only check auth once on mount
+    refreshUser().finally(() => {
+      if (mounted) {
+        setLoading(false);
+      }
+    });
+    
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run once on mount
 
   const login = async (email: string, password: string) => {
     const data = await authAPI.login({ email, password });

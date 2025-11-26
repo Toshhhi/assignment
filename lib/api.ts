@@ -25,12 +25,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-    }
+    // Don't redirect here - let components handle 401 errors
+    // This prevents infinite redirect loops
     return Promise.reject(error);
   }
 );

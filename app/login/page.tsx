@@ -10,14 +10,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, user } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
+    // Only redirect if user is loaded and auth check is complete
+    if (user && !authLoading) {
+      router.replace('/dashboard');
     }
-  }, [user, router]);
+  }, [user, router, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
